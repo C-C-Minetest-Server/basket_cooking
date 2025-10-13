@@ -9,8 +9,10 @@ local basket_recipe_cache = {}
 local basket_recipe_scheduled = {}
 
 local function generate_recipe_of_basket(basket_item)
-    local basket_meta = basket_item:get_meta()
-    local basket_inv = core.deserialize(basket_meta:get_string("inv"))
+    local basket_data = basket.get_basket_from_item(basket_item)
+    if not basket_data then return nil end
+
+    local basket_inv = basket_data.items
     local new_basket_inv = fakelib.create_inventory({ main = #basket_inv })
     local time = 0
 
@@ -34,15 +36,10 @@ local function generate_recipe_of_basket(basket_item)
         end
     end
 
-    new_basket_inv = new_basket_inv:get_list("main")
-    for i = 1, #new_basket_inv do
-        new_basket_inv[i] = new_basket_inv[i]:to_string()
-    end
-
-    local new_basket = ItemStack("basket:basket")
-    local new_basket_meta = new_basket:get_meta()
-    new_basket_meta:set_string("inv", core.serialize(new_basket_inv))
-    new_basket_meta:set_string("description", basket.get_infotext(new_basket_meta, new_basket_inv))
+    local new_basket = basket.get_basket_itemstack({
+        description = "",
+        items = new_basket_inv:get_list("main"),
+    })
 
     return {
         time = time,
